@@ -16,9 +16,10 @@ services:
       - DIRECT_URL=${DIRECT_URL}
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=7d
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       - WA_SESSION_PATH=/app/wa-sessions
-      - CORS_ORIGIN=${CORS_ORIGIN}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
       - WA_DEFAULT_MIN_DELAY=3000
       - WA_DEFAULT_MAX_DELAY=7000
       - WA_DEFAULT_MAX_MSG_PER_MIN=12
@@ -35,13 +36,13 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - app-network
 
   # ─── Redis ──────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    ports:
-      - '6379:6379'
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -50,21 +51,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - app-network
 
   # ─── Frontend (Next.js) ────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
     restart: unless-stopped
     ports:
       - '3000:3000'
-    environment:
-      - NEXT_PUBLIC_API_URL=http://api:4000/api/v1
     depends_on:
       - api
+    networks:
+      - app-network
 
 volumes:
   wa-sessions:
   redis-data:
   logs:
+
+
+networks:
+  app-network:
+    driver: bridge
