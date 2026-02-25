@@ -1,8 +1,9 @@
-import { Plan } from '@prisma/client';
+import { Plan, Role } from '@prisma/client';
 
 export interface AuthUser {
     id: string;
     email: string;
+    role: Role;
     plan: Plan;
     maxSessions: number;
     isActive: boolean;

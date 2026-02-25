@@ -9,7 +9,7 @@ export class AuthController {
         try {
             const { email, password, name } = req.body;
             const result = await authService.register(email, password, name);
-            ApiResponse.created(res, result, 'Registration successful');
+            ApiResponse.created(res, result, result.message);
         } catch (error) {
             next(error);
         }

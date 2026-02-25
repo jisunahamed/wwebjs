@@ -85,3 +85,15 @@ export const settingsApi = {
     reset: () => api.post('/settings/reset'),
     getDefaults: () => api.get('/settings/defaults'),
 };
+
+// ─── Admin API ───────────────────────────────────────────────────────────
+export const adminApi = {
+    getStats: () => api.get('/admin/stats'),
+    listUsers: (params?: { status?: string; search?: string }) =>
+        api.get('/admin/users', { params }),
+    approveUser: (id: string) => api.post(`/admin/users/${id}/approve`),
+    rejectUser: (id: string) => api.delete(`/admin/users/${id}/reject`),
+    toggleUserActive: (id: string) => api.patch(`/admin/users/${id}/toggle-active`),
+    updateUserPlan: (id: string, data: { plan: string; maxSessions?: number }) =>
+        api.patch(`/admin/users/${id}/plan`, data),
+};

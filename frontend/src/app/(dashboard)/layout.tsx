@@ -14,8 +14,12 @@ const navItems = [
     { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
+const adminNavItems = [
+    { href: '/admin', label: 'Admin Panel', icon: '👑' },
+];
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const { user, logout, isLoading, token } = useAuth();
+    const { user, logout, isLoading, token, isAdmin } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -32,6 +36,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
         );
     }
+
+    const allNavItems = isAdmin ? [...navItems, ...adminNavItems] : navItems;
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -65,7 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Navigation */}
                 <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {navItems.map((item) => {
+                    {allNavItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
@@ -102,22 +108,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             width: '36px',
                             height: '36px',
                             borderRadius: '50%',
-                            background: 'var(--accent-soft)',
+                            background: isAdmin ? 'rgba(255, 167, 38, 0.15)' : 'var(--accent-soft)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: 'var(--accent)',
+                            color: isAdmin ? 'var(--warning)' : 'var(--accent)',
                             fontWeight: 700,
                             fontSize: '14px',
                         }}>
-                            {user?.name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                            {isAdmin ? '👑' : (user?.name?.[0] || user?.email?.[0]?.toUpperCase() || 'U')}
                         </div>
                         <div>
                             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                                 {user?.name || user?.email?.split('@')[0]}
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                                {user?.plan} plan
+                                {isAdmin ? '👑 Admin' : `${user?.plan} plan`}
                             </div>
                         </div>
                     </div>

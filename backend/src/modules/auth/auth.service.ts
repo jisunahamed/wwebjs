@@ -11,15 +11,27 @@ export class AuthService {
             throw new AppError('Email already registered', 409);
         }
 
+        // First user becomes ADMIN and is auto-approved
+        const userCount = await prisma.user.count();
+        const isFirstUser = userCount === 0;
+
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.create({
-            data: { email, password: hashedPassword, name },
+            data: {
+                email,
+                password: hashedPassword,
+                name,
+                role: isFirstUser ? 'ADMIN' : 'USER',
+                isApproved: isFirstUser, // First user auto-approved
+            },
             select: {
                 id: true,
                 email: true,
                 name: true,
+                role: true,
                 plan: true,
                 maxSessions: true,
+                isApproved: true,
                 createdAt: true,
             },
         });
@@ -29,8 +41,13 @@ export class AuthService {
             data: { userId: user.id },
         });
 
-        const token = this.generateToken(user.id);
-        return { user, token };
+        return {
+            user,
+            isFirstUser,
+            message: isFirstUser
+                ? 'Admin account created! You can log in now.'
+                : 'Registration successful! Your account is pending admin approval.',
+        };
     }
 
     async login(email: string, password: string) {
@@ -43,12 +60,17 @@ export class AuthService {
             throw new AppError('Account is deactivated', 403);
         }
 
+        if (!user.isApproved) {
+            throw new AppError('Your account is pending admin approval. Please wait for approval.', 403);
+        }
+
         const token = this.generateToken(user.id);
         return {
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
+                role: user.role,
                 plan: user.plan,
                 maxSessions: user.maxSessions,
             },
@@ -63,9 +85,11 @@ export class AuthService {
                 id: true,
                 email: true,
                 name: true,
+                role: true,
                 plan: true,
                 maxSessions: true,
                 isActive: true,
+                isApproved: true,
                 createdAt: true,
                 _count: {
                     select: {

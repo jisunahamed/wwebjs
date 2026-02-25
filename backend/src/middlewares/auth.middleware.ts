@@ -20,6 +20,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             select: {
                 id: true,
                 email: true,
+                role: true,
                 plan: true,
                 maxSessions: true,
                 isActive: true,
@@ -45,4 +46,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         }
         next(new AppError('Authentication failed', 401));
     }
+};
+
+// Admin-only middleware — must be used AFTER authMiddleware
+export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || req.user.role !== 'ADMIN') {
+        return next(new AppError('Admin access required', 403));
+    }
+    next();
 };

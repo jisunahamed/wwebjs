@@ -21,7 +21,12 @@ export default function LoginPage() {
             toast.success('Welcome back!');
             router.push('/dashboard');
         } catch (err: any) {
-            toast.error(err.response?.data?.error || 'Login failed');
+            const errorMsg = err.response?.data?.error || 'Login failed';
+            if (errorMsg.includes('pending')) {
+                toast.error('⏳ Your account is pending admin approval.', { duration: 5000 });
+            } else {
+                toast.error(errorMsg);
+            }
         } finally {
             setLoading(false);
         }
@@ -61,7 +66,7 @@ export default function LoginPage() {
                     </button>
                 </form>
                 <div className="auth-footer">
-                    Don&apos;t have an account? <Link href="/register">Create one</Link>
+                    Don&apos;t have an account? <Link href="/register">Sign up</Link>
                 </div>
             </div>
         </div>

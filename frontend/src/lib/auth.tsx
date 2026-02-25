@@ -7,6 +7,7 @@ interface User {
     id: string;
     email: string;
     name: string | null;
+    role: string;
     plan: string;
     maxSessions: number;
 }
@@ -15,9 +16,10 @@ interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, name?: string) => Promise<void>;
+    register: (email: string, password: string, name?: string) => Promise<{ isFirstUser: boolean; message: string }>;
     logout: () => void;
     isLoading: boolean;
+    isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,11 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const register = async (email: string, password: string, name?: string) => {
         const res = await authApi.register({ email, password, name });
-        const { user: userData, token: tokenData } = res.data.data;
-        setUser(userData);
-        setToken(tokenData);
-        localStorage.setItem('token', tokenData);
-        localStorage.setItem('user', JSON.stringify(userData));
+        const { user: userData, isFirstUser, message } = res.data.data;
+
+        // Only auto-login if first user (admin)
+        if (isFirstUser) {
+            // First user gets a token (auto-approved admin) — need to login separately
+            // Actually, the register endpoint doesn't return a token anymore
+            // So we just return the result
+        }
+
+        return { isFirstUser, message };
     };
 
     const logout = () => {
@@ -62,8 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('user');
     };
 
+    const isAdmin = user?.role === 'ADMIN';
+
     return (
-        <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, token, login, register, logout, isLoading, isAdmin }}>
             {children}
         </AuthContext.Provider>
     );

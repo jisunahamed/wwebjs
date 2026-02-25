@@ -17,6 +17,7 @@ import sessionRoutes from './modules/session/session.routes';
 import messageRoutes from './modules/message/message.routes';
 import webhookRoutes from './modules/webhook/webhook.routes';
 import settingsRoutes from './modules/settings/settings.routes';
+import adminRoutes from './modules/admin/admin.routes';
 
 const app = express();
 
@@ -65,6 +66,7 @@ apiRouter.use('/sessions', sessionRoutes);
 apiRouter.use('/messages', messageRoutes);
 apiRouter.use('/webhooks', webhookRoutes);
 apiRouter.use('/settings', settingsRoutes);
+apiRouter.use('/admin', adminRoutes);
 
 // Apply rate limiter to all API routes
 app.use('/api/v1', apiRateLimiter, apiRouter);
