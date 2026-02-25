@@ -3,7 +3,7 @@ import { config } from './config';
 import { logger } from './config/logger';
 import { prisma } from './config/database';
 
-// Import workers to start them
+// Import workers — they self-check for Redis availability
 import './workers/message.worker';
 import './workers/webhook.worker';
 import './workers/session.worker';

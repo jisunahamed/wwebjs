@@ -3,7 +3,23 @@ import { prisma } from '../../config/database';
 import { config } from '../../config';
 import { logger } from '../../config/logger';
 import { webhookQueue } from '../../queues/webhook.queue';
+import { deliverWebhook } from '../webhook/webhook.delivery';
 import { EventEmitter } from 'events';
+
+// Helper: use queue if Redis available, otherwise deliver directly
+async function emitWebhook(jobName: string, data: any) {
+    try {
+        if (webhookQueue) {
+            await webhookQueue.add(jobName, data);
+        } else {
+            // Direct delivery fallback (no Redis)
+            await deliverWebhook(data);
+        }
+    } catch (err) {
+        logger.debug(`Webhook emit failed for ${jobName}, trying direct delivery`);
+        try { await deliverWebhook(data); } catch { }
+    }
+}
 
 class SessionManager extends EventEmitter {
     private clients: Map<string, Client> = new Map();
@@ -14,6 +30,20 @@ class SessionManager extends EventEmitter {
             return;
         }
 
+        const puppeteerArgs = [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--no-first-run',
+            '--disable-extensions',
+        ];
+
+        // On Linux (Docker), add more restrictive args
+        if (process.platform === 'linux') {
+            puppeteerArgs.push('--no-zygote', '--single-process');
+        }
+
         const client = new Client({
             authStrategy: new LocalAuth({
                 clientId: sessionId,
@@ -21,15 +51,11 @@ class SessionManager extends EventEmitter {
             }),
             puppeteer: {
                 headless: true,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-gpu',
-                    '--disable-dev-shm-usage',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--single-process',
-                ],
+                args: puppeteerArgs,
+                // Use system Chrome on Windows if PUPPETEER_EXECUTABLE_PATH not set
+                ...(process.env.PUPPETEER_EXECUTABLE_PATH
+                    ? { executablePath: process.env.PUPPETEER_EXECUTABLE_PATH }
+                    : {}),
             },
         });
 
@@ -78,7 +104,7 @@ class SessionManager extends EventEmitter {
                 });
                 this.emit('ready', { sessionId });
 
-                await webhookQueue.add('session.connected', {
+                await emitWebhook('session.connected', {
                     userId,
                     sessionId,
                     event: 'session.connected',
@@ -100,7 +126,7 @@ class SessionManager extends EventEmitter {
                 this.clients.delete(sessionId);
                 this.emit('disconnected', { sessionId, reason });
 
-                await webhookQueue.add('session.disconnected', {
+                await emitWebhook('session.disconnected', {
                     userId,
                     sessionId,
                     event: 'session.disconnected',
@@ -133,7 +159,7 @@ class SessionManager extends EventEmitter {
                     data: { lastActive: new Date() },
                 });
 
-                await webhookQueue.add('message.received', {
+                await emitWebhook('message.received', {
                     userId,
                     sessionId,
                     event: 'message.received',
