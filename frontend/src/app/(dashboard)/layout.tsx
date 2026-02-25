@@ -11,6 +11,7 @@ const navItems = [
     { href: '/api-keys', label: 'API Keys', icon: '🔑' },
     { href: '/messages', label: 'Messages', icon: '📨' },
     { href: '/webhooks', label: 'Webhooks', icon: '🔗' },
+    { href: '/docs', label: 'Docs', icon: '📚' },
     { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
@@ -31,8 +32,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     if (isLoading || !token) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ textAlign: 'center', color: '#8888a0' }}>Loading...</div>
+            <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
+                <div style={{ color: 'var(--text-muted)', fontFamily: 'Outfit' }}>Loading Workspace...</div>
             </div>
         );
     }
@@ -40,11 +41,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const allNavItems = isAdmin ? [...navItems, ...adminNavItems] : navItems;
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh' }}>
-            {/* Sidebar */}
-            <aside style={{
-                width: '260px',
-                background: 'var(--bg-secondary)',
+        <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+            {/* Sidebar with Glassmorphism */}
+            <aside className="glass" style={{
+                width: '280px',
                 borderRight: '1px solid var(--border)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -54,99 +54,125 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 bottom: 0,
                 zIndex: 100,
             }}>
-                {/* Logo */}
+                {/* Brand Logo */}
                 <div style={{
-                    padding: '24px 20px',
-                    borderBottom: '1px solid var(--border)',
+                    padding: '32px 24px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
+                    gap: '14px',
                 }}>
-                    <span style={{ fontSize: '28px' }}>💬</span>
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        background: 'var(--accent)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px',
+                        boxShadow: '0 8px 16px -4px var(--accent-glow)'
+                    }}>💬</div>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--text-primary)' }}>WP Provider</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Session Manager</div>
+                        <div style={{ fontWeight: 800, fontSize: '18px', color: 'var(--text-primary)', fontFamily: 'Outfit', letterSpacing: '-0.02em' }}>WP Provider</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>SaaS Platform</div>
                     </div>
                 </div>
 
-                {/* Navigation */}
-                <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {allNavItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    padding: '10px 14px',
-                                    borderRadius: '8px',
-                                    textDecoration: 'none',
-                                    color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                                    background: isActive ? 'var(--accent-soft)' : 'transparent',
-                                    fontWeight: isActive ? 600 : 400,
-                                    fontSize: '14px',
-                                    transition: 'all 0.2s',
-                                }}
-                            >
-                                <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
+                {/* Navigation Section */}
+                <div style={{ padding: '0 24px', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px', paddingLeft: '12px' }}>Menu</div>
+                    <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {allNavItems.map((item) => {
+                            const isActive = pathname === item.href;
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={isActive ? 'fade-in' : ''}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        padding: '12px 14px',
+                                        borderRadius: '12px',
+                                        textDecoration: 'none',
+                                        color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                        background: isActive ? 'var(--bg-hover)' : 'transparent',
+                                        border: isActive ? '1px solid var(--border-strong)' : '1px solid transparent',
+                                        fontWeight: isActive ? 600 : 500,
+                                        fontSize: '14px',
+                                        transition: 'all var(--transition)',
+                                    }}
+                                >
+                                    <span style={{
+                                        fontSize: '18px',
+                                        filter: isActive ? 'drop-shadow(0 0 8px var(--accent-glow))' : 'none',
+                                        opacity: isActive ? 1 : 0.7
+                                    }}>{item.icon}</span>
+                                    {item.label}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
 
-                {/* User Info */}
+                {/* Footer User Profile */}
                 <div style={{
-                    padding: '16px 20px',
+                    marginTop: 'auto',
+                    padding: '24px',
                     borderTop: '1px solid var(--border)',
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '50%',
-                            background: isAdmin ? 'rgba(255, 167, 38, 0.15)' : 'var(--accent-soft)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: isAdmin ? 'var(--warning)' : 'var(--accent)',
-                            fontWeight: 700,
-                            fontSize: '14px',
-                        }}>
-                            {isAdmin ? '👑' : (user?.name?.[0] || user?.email?.[0]?.toUpperCase() || 'U')}
-                        </div>
-                        <div>
-                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                                {user?.name || user?.email?.split('@')[0]}
+                    <div className="glass-card" style={{ padding: '16px', border: '1px solid var(--border-strong)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                            <div style={{
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '12px',
+                                background: isAdmin ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #6c5ce7, #4834d4)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 800,
+                                fontSize: '16px',
+                                boxShadow: isAdmin ? '0 4px 12px rgba(245, 158, 11, 0.3)' : '0 4px 12px rgba(108, 92, 231, 0.3)',
+                                fontFamily: 'Outfit'
+                            }}>
+                                {isAdmin ? '👑' : (user?.name?.[0] || user?.email?.[0]?.toUpperCase() || 'U')}
                             </div>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                                {isAdmin ? '👑 Admin' : `${user?.plan} plan`}
+                            <div style={{ overflow: 'hidden' }}>
+                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'Outfit' }}>
+                                    {user?.name || user?.email?.split('@')[0]}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                                    {isAdmin ? 'PLATFORM ADMIN' : `${user?.plan} PLAN`}
+                                </div>
                             </div>
                         </div>
+                        <button
+                            onClick={logout}
+                            className="btn btn-outline btn-sm"
+                            style={{ width: '100%', borderRadius: '10px' }}
+                        >
+                            Log Out
+                        </button>
                     </div>
-                    <button
-                        onClick={logout}
-                        className="btn btn-ghost btn-sm"
-                        style={{ width: '100%', justifyContent: 'center' }}
-                    >
-                        Sign Out
-                    </button>
                 </div>
             </aside>
 
-            {/* Main Content */}
+            {/* Main Content Area */}
             <main style={{
                 flex: 1,
-                marginLeft: '260px',
-                padding: '32px 40px',
+                marginLeft: '280px',
+                padding: '48px 60px',
                 background: 'var(--bg-primary)',
                 minHeight: '100vh',
             }}>
-                {children}
+                <div className="fade-in">
+                    {children}
+                </div>
             </main>
         </div>
     );
 }
+

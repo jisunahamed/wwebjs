@@ -8,11 +8,20 @@ import './workers/message.worker';
 import './workers/webhook.worker';
 import './workers/session.worker';
 
-const server = app.listen(config.port, () => {
+import { sessionManager } from './modules/session/sessionManager';
+
+const server = app.listen(config.port, async () => {
     logger.info(`🚀 Server running on port ${config.port}`);
     logger.info(`📚 Swagger docs: http://localhost:${config.port}/api-docs`);
     logger.info(`🏥 Health check: http://localhost:${config.port}/health`);
     logger.info(`🌍 Environment: ${config.nodeEnv}`);
+
+    // Auto-restore active sessions on startup
+    try {
+        await sessionManager.initialize();
+    } catch (err) {
+        logger.error('Failed to initialize sessions on startup:', err);
+    }
 });
 
 // Graceful shutdown

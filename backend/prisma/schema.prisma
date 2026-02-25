@@ -25,6 +25,7 @@ model User {
   sessions      Session[]
   webhooks      Webhook[]
   usageLogs     UsageLog[]
+  messages      Message[]
   settings      UserSettings?
 }
 
@@ -65,22 +66,27 @@ model Session {
 }
 
 model Message {
-  id            String        @id @default(uuid())
+  id            String           @id @default(uuid())
   sessionId     String
+  userId        String
   to            String
-  body          String        @db.Text
+  body          String           @db.Text
   mediaUrl      String?
-  type          MessageType   @default(TEXT)
-  status        MessageStatus @default(QUEUED)
+  type          MessageType      @default(TEXT)
+  status        MessageStatus    @default(QUEUED)
+  direction     MessageDirection @default(OUTBOUND)
   externalId    String?
   errorMessage  String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
-  session       Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session       Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+  @@index([userId])
   @@index([status])
+  @@index([direction])
 }
 
 model Webhook {
@@ -170,6 +176,7 @@ enum SessionStatus {
 
 enum MessageType {
   TEXT
+  CHAT
   IMAGE
   DOCUMENT
   VIDEO
@@ -183,4 +190,10 @@ enum MessageStatus {
   DELIVERED
   READ
   FAILED
+  RECEIVED
+}
+
+enum MessageDirection {
+  OUTBOUND
+  INBOUND
 }

@@ -154,10 +154,35 @@ class SessionManager extends EventEmitter {
 
         client.on('message', async (msg) => {
             try {
+                logger.info(`📩 Incoming message on session ${sessionId} from ${msg.from}: ${msg.body?.substring(0, 50)}`);
+
+                // Map whatsapp-web.js type to our MessageType enum
+                const typeMap: Record<string, string> = {
+                    chat: 'CHAT', text: 'TEXT', image: 'IMAGE',
+                    video: 'VIDEO', audio: 'AUDIO', document: 'DOCUMENT',
+                };
+                const msgType = typeMap[msg.type] || 'CHAT';
+
+                // Store incoming message in DB
+                await prisma.message.create({
+                    data: {
+                        sessionId,
+                        userId,
+                        to: msg.to || sessionId,
+                        body: msg.body || '',
+                        type: msgType as any,
+                        status: 'RECEIVED' as any,
+                        direction: 'INBOUND' as any,
+                        externalId: (msg as any).id?._serialized || null,
+                    },
+                });
+
                 await prisma.session.update({
                     where: { id: sessionId },
                     data: { lastActive: new Date() },
                 });
+
+                logger.info(`📩 Message stored, now emitting webhook for session ${sessionId}`);
 
                 await emitWebhook('message.received', {
                     userId,
@@ -171,6 +196,8 @@ class SessionManager extends EventEmitter {
                         hasMedia: msg.hasMedia,
                     },
                 });
+
+                logger.info(`✅ Webhook emitted for incoming message on session ${sessionId}`);
             } catch (err) {
                 logger.error(`Failed to handle message for session ${sessionId}`, err);
             }
@@ -256,6 +283,28 @@ class SessionManager extends EventEmitter {
 
     getActiveSessionCount(): number {
         return this.clients.size;
+    }
+
+    async initialize(): Promise<void> {
+        logger.info('Initializing all active WhatsApp sessions...');
+        const sessions = await prisma.session.findMany({
+            where: {
+                status: { in: ['CONNECTED', 'QR_READY', 'INITIALIZING'] }
+            }
+        });
+
+        logger.info(`Found ${sessions.length} sessions to restore`);
+
+        for (const session of sessions) {
+            try {
+                // Don't await here, initialize in background
+                this.createSession(session.id, session.userId).catch(err => {
+                    logger.error(`Failed to restore session ${session.id}:`, err);
+                });
+            } catch (err) {
+                logger.error(`Error triggering restoration for session ${session.id}:`, err);
+            }
+        }
     }
 }
 
