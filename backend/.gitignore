@@ -1,0 +1,7 @@
+node_modules/
+dist/
+logs/
+wa-sessions/
+.env
+.env.local
+*.log
