@@ -54,9 +54,9 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY prisma/ ./prisma/
 COPY package.json ./
 
-# Copy entrypoint script
+# Copy entrypoint script and fix line endings (Windows CRLF → Unix LF)
 COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 # Create necessary directories
 RUN mkdir -p wa-sessions logs && chown -R node:node /app

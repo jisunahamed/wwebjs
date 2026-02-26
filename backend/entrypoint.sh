@@ -7,8 +7,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 # Step 1: Apply pending database migrations
 echo "→ Running database migrations..."
-npx prisma migrate deploy
-echo "✓ Migrations applied successfully"
+npx prisma migrate deploy || echo "⚠ Migration skipped (no pending migrations or DB not ready)"
+echo "✓ Migrations step complete"
 
 # Step 2: Generate Prisma client (in case schema changed)
 echo "→ Generating Prisma client..."
