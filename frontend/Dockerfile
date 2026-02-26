@@ -16,11 +16,17 @@ FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Increase Node.js memory for build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 # Bake the API URL into the Next.js build (required at build-time for NEXT_PUBLIC_*)
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN npm run build
+
+# Ensure static folder exists
+RUN mkdir -p .next/static
 
 # ─── Production ──────────────────────────────────────────────────────────────
 FROM base AS production
@@ -30,15 +36,16 @@ LABEL description="Frontend Dashboard for WhatsApp Session Provider SaaS"
 
 ENV NODE_ENV=production
 
-# Copy standalone server + static assets
+# Run as non-root for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy standalone server + static assets + public
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 
-# Run as non-root for security
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs && \
-    chown -R nextjs:nodejs /app
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
