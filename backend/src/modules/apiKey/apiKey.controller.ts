@@ -26,7 +26,7 @@ export class ApiKeyController {
 
     async revoke(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await apiKeyService.revoke(req.user!.id, req.params.id);
+            const result = await apiKeyService.revoke(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result, 200, 'API key revoked');
         } catch (error) {
             next(error);
@@ -35,7 +35,7 @@ export class ApiKeyController {
 
     async delete(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await apiKeyService.delete(req.user!.id, req.params.id);
+            const result = await apiKeyService.delete(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result, 200, 'API key deleted');
         } catch (error) {
             next(error);

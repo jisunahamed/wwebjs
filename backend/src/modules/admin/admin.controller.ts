@@ -22,21 +22,21 @@ export class AdminController {
 
     async approveUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await adminService.approveUser(req.params.id);
+            const result = await adminService.approveUser(req.params.id as string);
             ApiResponse.success(res, result, 200, 'User approved successfully');
         } catch (error) { next(error); }
     }
 
     async rejectUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await adminService.rejectUser(req.params.id);
+            const result = await adminService.rejectUser(req.params.id as string);
             ApiResponse.success(res, result, 200, 'User rejected');
         } catch (error) { next(error); }
     }
 
     async toggleUserActive(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await adminService.toggleUserActive(req.params.id);
+            const result = await adminService.toggleUserActive(req.params.id as string);
             ApiResponse.success(res, result);
         } catch (error) { next(error); }
     }
@@ -44,7 +44,7 @@ export class AdminController {
     async updateUserPlan(req: Request, res: Response, next: NextFunction) {
         try {
             const { plan, maxSessions } = req.body;
-            const result = await adminService.updateUserPlan(req.params.id, plan, maxSessions);
+            const result = await adminService.updateUserPlan(req.params.id as string, plan, maxSessions);
             ApiResponse.success(res, result, 200, 'Plan updated');
         } catch (error) { next(error); }
     }

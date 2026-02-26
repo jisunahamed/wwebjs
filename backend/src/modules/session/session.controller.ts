@@ -25,7 +25,7 @@ export class SessionController {
 
     async getById(req: Request, res: Response, next: NextFunction) {
         try {
-            const session = await sessionService.getById(req.user!.id, req.params.id);
+            const session = await sessionService.getById(req.user!.id, req.params.id as string);
             ApiResponse.success(res, session);
         } catch (error) {
             next(error);
@@ -34,7 +34,7 @@ export class SessionController {
 
     async getQrCode(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await sessionService.getQrCode(req.user!.id, req.params.id);
+            const result = await sessionService.getQrCode(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result);
         } catch (error) {
             next(error);
@@ -43,7 +43,7 @@ export class SessionController {
 
     async delete(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await sessionService.delete(req.user!.id, req.params.id);
+            const result = await sessionService.delete(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result, 200, 'Session deleted');
         } catch (error) {
             next(error);
@@ -52,7 +52,7 @@ export class SessionController {
 
     async reconnect(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await sessionService.reconnect(req.user!.id, req.params.id);
+            const result = await sessionService.reconnect(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result);
         } catch (error) {
             next(error);
@@ -80,7 +80,7 @@ export class SessionController {
         try {
             const result = await sessionService.getSessionStatus(
                 req.user!.id,
-                req.params.sessionId
+                req.params.sessionId as string
             );
             ApiResponse.success(res, result);
         } catch (error) {

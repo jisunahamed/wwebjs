@@ -26,7 +26,7 @@ export class WebhookController {
 
     async getById(req: Request, res: Response, next: NextFunction) {
         try {
-            const webhook = await webhookService.getById(req.user!.id, req.params.id);
+            const webhook = await webhookService.getById(req.user!.id, req.params.id as string);
             ApiResponse.success(res, webhook);
         } catch (error) {
             next(error);
@@ -35,7 +35,7 @@ export class WebhookController {
 
     async update(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await webhookService.update(req.user!.id, req.params.id, req.body);
+            const result = await webhookService.update(req.user!.id, req.params.id as string, req.body);
             ApiResponse.success(res, result, 200, 'Webhook updated');
         } catch (error) {
             next(error);
@@ -44,7 +44,7 @@ export class WebhookController {
 
     async delete(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await webhookService.delete(req.user!.id, req.params.id);
+            const result = await webhookService.delete(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result, 200, 'Webhook deleted');
         } catch (error) {
             next(error);
@@ -53,7 +53,7 @@ export class WebhookController {
 
     async regenerateSecret(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await webhookService.regenerateSecret(req.user!.id, req.params.id);
+            const result = await webhookService.regenerateSecret(req.user!.id, req.params.id as string);
             ApiResponse.success(res, result, 200, 'Webhook secret regenerated');
         } catch (error) {
             next(error);

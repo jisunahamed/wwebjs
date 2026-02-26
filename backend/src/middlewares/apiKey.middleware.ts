@@ -19,6 +19,7 @@ export const apiKeyMiddleware = async (req: Request, res: Response, next: NextFu
                         id: true,
                         email: true,
                         plan: true,
+                        role: true,
                         maxSessions: true,
                         isActive: true,
                     },

@@ -158,6 +158,7 @@ export class SessionService {
         const message = await prisma.message.create({
             data: {
                 sessionId,
+                userId,
                 to,
                 body,
                 type: type as any,
@@ -174,16 +175,17 @@ export class SessionService {
             },
         });
 
-        // Add to queue
-        await messageQueue.add('send-message', {
-            messageId: message.id,
-            sessionId,
-            userId,
-            to,
-            body,
-            type,
-            mediaUrl,
-        });
+        if (messageQueue) {
+            await messageQueue.add('send-message', {
+                messageId: message.id,
+                sessionId,
+                userId,
+                to,
+                body,
+                type,
+                mediaUrl,
+            });
+        }
 
         return message;
     }

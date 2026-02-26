@@ -70,9 +70,14 @@ export class WebhookService {
             throw new AppError('Webhook not found', 404);
         }
 
+        const updateData: any = {};
+        if (data.url !== undefined) updateData.url = data.url;
+        if (data.events !== undefined) updateData.events = data.events;
+        if (data.isActive !== undefined) updateData.isActive = data.isActive;
+
         return prisma.webhook.update({
             where: { id: webhookId },
-            data,
+            data: updateData,
             select: {
                 id: true,
                 url: true,
